@@ -12,3 +12,7 @@ To install, simply include GridFS.js in your project.
 var GridFS = require('./GridFS.js').GridFS;
 </pre>
 </code>
+
+### Documentation:
+
+Click [here](http://siddmahen.github.com/GridFS) to view the documentation online, or look at the source.
