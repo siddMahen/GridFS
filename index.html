@@ -108,12 +108,11 @@ code .this { color: #19469D; }</style>
 		</script>
 	</head>
 	<body>
-<table id="source"><tbody><tr><td><h1>GridFS</h1><p>Simple GridFS capabilities built on <a href="https://github.com/christkv/node-mongodb-native" title="node-mongodb-native">node-mongodb-native</a>.
- </p></td><td></td></tr><tr class="filename"><td><h2 id="GridFS.js"><a href="#">GridFS</a></h2></td><td>GridFS.js</td></tr><tr class="code">
+<table id="source"><tbody><tr><td><h1>GridFS</h1><p>Simple GridFS capabilities built on <a href="https://github.com/christkv/node-mongodb-native" title="node-mongodb-native">node-mongodb-native</a>.</p></td><td></td></tr><tr class="filename"><td><h2 id="GridFS/GridFS.js"><a href="#">GridFS</a></h2></td><td>GridFS/GridFS.js</td></tr><tr class="code">
 <td class="docs">
 <ul><li><strong>author</strong>: <em>Siddharth</em>
 Mahendraker</li><li><strong>version</strong>: <em>0</em>
-.1</li></ul>
+.2</li></ul>
 </td>
 <td class="code">
 
@@ -121,15 +120,8 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 </tr>
 <tr class="code">
 <td class="docs">
-<p><em>Module dependencies.</em></p>
-
-<p>These can also be run solely using mongoose using the
-following syntax:</p>
-
-<ul><li><strong>example</strong>: <em>var</em>
-GridStore = require('mongoose').mongo.GridStore,
-					   Db = require('mongoose').mongo.Db,
-	   etc...</li></ul>
+<p><em>Module dependencies.</em>
+ </p>
 </td>
 <td class="code">
 <pre><code><span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
@@ -157,12 +149,18 @@ If nothing is specified then the default 'fs' will be used.</p>
 <td class="code">
 <pre><code><span class="keyword">function</span> <span class="class">GridFS</span>(<span class="variable">dbname</span>,<span class="variable">filesys</span>){
 
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+
 	<span class="keyword">var</span> <span class="variable">host</span> = <span class="variable">process</span>.<span class="variable">env</span>[<span class="string">'MONGO_NODE_DRIVER_HOST'</span>] != <span class="keyword">null</span> ? <span class="variable">process</span>.<span class="variable">env</span>[<span class="string">'MONGO_NODE_DRIVER_HOST'</span>] : <span class="string">'localhost'</span>;
 	<span class="keyword">var</span> <span class="variable">port</span> = <span class="variable">process</span>.<span class="variable">env</span>[<span class="string">'MONGO_NODE_DRIVER_PORT'</span>] != <span class="keyword">null</span> ? <span class="variable">process</span>.<span class="variable">env</span>[<span class="string">'MONGO_NODE_DRIVER_PORT'</span>] : <span class="class">Connection</span>.<span class="class">DEFAULT_PORT</span>;
 
 	<span class="this">this</span>.<span class="variable">dbcon</span> = <span class="keyword">new</span> <span class="class">Db</span>(<span class="variable">dbname</span>, <span class="keyword">new</span> <span class="class">Server</span>(<span class="variable">host</span>, <span class="variable">port</span>, {}), { <span class="variable">native_parser</span> : <span class="variable">true</span> });
+	<span class="this">this</span>.<span class="variable">fs</span> = <span class="variable">filesys</span> === <span class="variable">undefined</span> ? <span class="class">GridStore</span>.<span class="class">DEFAULT_ROOT_COLLECTION</span> : <span class="variable">filesys</span>;
+	<span class="this">this</span>.<span class="variable">opQueue</span> = [];
 	
-	<span class="this">this</span>.<span class="variable">fs</span> = <span class="variable">filesys</span> === <span class="variable">undefined</span> ? <span class="string">'fs'</span> : <span class="variable">filesys</span>;
+	<span class="keyword">if</span>(!(<span class="this">this</span>.<span class="variable">dbcon</span>)) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'Database creation failed.'</span>);
+	
+	<span class="this">this</span>.<span class="variable">open</span>();
 };</code></pre>
 </td>
 </tr>
@@ -172,7 +170,7 @@ If nothing is specified then the default 'fs' will be used.</p>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>Buffer</em>  buffer</p></li><li><p><strong>param</strong>: <em>String</em>  filename </p></li><li><p><strong>param</strong>: <em>String</em>  mode</p></li><li><p><strong>param</strong>: <em>Object</em>  options</p></li><li><p><strong>param</strong>: <em>Function</em>  callback (optional)</p></li></ul>
+<ul><li><p><strong>param</strong>: <em>Buffer</em>  buffer</p></li><li><p><strong>param</strong>: <em>String</em>  filename </p></li><li><p><strong>param</strong>: <em>String</em>  mode</p></li><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
 
 <p>mode can be set to either 'w' to overwrite the content of the file
 or 'w+' to append to the contents of the file.</p>
@@ -182,36 +180,21 @@ or 'w+' to append to the contents of the file.</p>
 <ul><li><strong>example</strong>: <em>var</em>
 options = {"content_type":"image/png","metadata":{ "person": "George"},"chunk_size": 1024*4};</li></ul>
 
-<p>The callback takes an error and a result parameter which provides information
-such as MD5 hash. Although it is optional, the callback parameter 
-is recommended to handle errors.</p>
+<p>The callback takes an error and a result parameter, which provides information
+about the file after it has been stored. </p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">putFile</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
-
-	<span class="keyword">var</span> <span class="variable">fs</span> = <span class="this">this</span>.<span class="variable">fs</span>;
-		
-	<span class="variable">options</span>.<span class="variable">root</span> = <span class="variable">options</span>.<span class="variable">root</span> === <span class="variable">undefined</span> ? <span class="variable">fs</span> : <span class="variable">options</span>.<span class="variable">root</span>;
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">put</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
 	
-	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">database</span>){
-		<span class="keyword">if</span>(<span class="variable">err</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">callback</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-		
-		<span class="keyword">var</span> <span class="variable">gridStore</span> = <span class="keyword">new</span> <span class="class">GridStore</span>(<span class="variable">database</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>);
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">buffer</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>];
 
-		 <span class="variable">gridStore</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">gridStore</span>){
-		 	<span class="keyword">if</span>(<span class="variable">err</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">callback</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-		 	<span class="variable">gridStore</span>.<span class="variable">write</span>(<span class="variable">buffer</span>, <span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">gridStore</span>){
-		 		<span class="keyword">if</span>(<span class="variable">err</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">callback</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-		 		<span class="variable">gridStore</span>.<span class="variable">close</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">result</span>){
-		 			<span class="variable">database</span>.<span class="variable">close</span>();
-		 			<span class="keyword">if</span> (<span class="variable">callback</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="variable">result</span>);
-		 		});
-		 	});
-		 });
-	});
-};</code></pre>
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">putFile</span>,<span class="variable">args</span>]);	
+	
+	<span class="variable">self</span>.<span class="variable">performOp</span>();
+}</code></pre>
 </td>
 </tr>
 <tr class="code">
@@ -222,40 +205,20 @@ is recommended to handle errors.</p>
 
 <ul><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
 
-<p>The callback function takes an error and the return data as parameter</p>
+<p>The callback function takes an error and the return data as parameter.</p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">getFile</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">get</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
 
-	<span class="keyword">var</span> <span class="variable">fs</span> = <span class="this">this</span>.<span class="variable">fs</span>;
-	<span class="comment">// !TODO: Add support for length(size) and offset in read</span>
-	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">database</span>){	
-		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-
-		<span class="keyword">var</span> <span class="variable">gridStore</span> = <span class="keyword">new</span> <span class="class">GridStore</span>(<span class="variable">database</span>, <span class="variable">filename</span>, <span class="string">'r'</span>, { <span class="string">'root'</span>
-		 : <span class="variable">fs</span> });
-
-		<span class="class">GridStore</span>.<span class="variable">exist</span>(<span class="variable">database</span>, <span class="variable">filename</span>, <span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">exists</span>){
-			<span class="keyword">if</span>(<span class="variable">err</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-			<span class="keyword">if</span>(<span class="variable">exists</span> === <span class="variable">true</span>)
-			{
-				<span class="variable">gridStore</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">gridStore</span>){
-					<span class="keyword">if</span>(<span class="variable">err</span>) <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
-					<span class="variable">gridStore</span>.<span class="variable">read</span>(<span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">data</span>){
-						<span class="variable">database</span>.<span class="variable">close</span>();
-						<span class="variable">callback</span>(<span class="variable">err</span>,<span class="variable">data</span>);
-					});
-				});				
-			}
-			<span class="keyword">else</span>
-			{
-				<span class="variable">callback</span>(<span class="class">Error</span>(<span class="string">'This file does not exist'</span>),<span class="keyword">null</span>);
-			}	
-		});
-	});
-};</code></pre>
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">filename</span>, <span class="variable">callback</span>];
+	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">getFile</span>,<span class="variable">args</span>]);	
+	
+	<span class="variable">self</span>.<span class="variable">performOp</span>();
+}</code></pre>
 </td>
 </tr>
 <tr class="code">
@@ -266,21 +229,69 @@ is recommended to handle errors.</p>
 
 <ul><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
 
-<p>The callback function takes an error as a parameter</p>
+<p>The callback function takes an error as a parameter.</p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">deleteFile</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="keyword">delete</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
 
-	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>,<span class="variable">database</span>){
-		<span class="keyword">if</span>(<span class="variable">err</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">callback</span>) <span class="variable">callback</span>(<span class="variable">err</span>);
-		<span class="class">GridStore</span>.<span class="variable">unlink</span>(<span class="variable">database</span>,<span class="variable">filename</span>,<span class="keyword">function</span>(){
-			<span class="variable">database</span>.<span class="variable">close</span>();
-			<span class="keyword">if</span>(<span class="variable">callback</span>) <span class="variable">callback</span>(<span class="keyword">null</span>);
-		});
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">filename</span>, <span class="variable">callback</span>];
+	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">deleteFile</span>,<span class="variable">args</span>]);	
+	
+	<span class="variable">self</span>.<span class="variable">performOp</span>();
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Opens the database connection.</em></p>
+
+<p>This method should not normally be implemented, unless you have closed the connection
+and wish to open it again.</p>
+
+<ul><li><strong>example</strong>: <em>myFS</em>
+.put(foo, bar, 'w', function(){ myFS.close(); });
+			...
+			myFS.open();</li></ul>
+
+<p>By default, a GridFS instance is returned already open(). </p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">open</span> = <span class="keyword">function</span>(){
+	
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	
+	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>){
+		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">throw</span> <span class="variable">err</span>;
+		<span class="variable">self</span>.<span class="variable">performOp</span>();
 	});
-};</code></pre>
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Closes the database connection.</em></p>
+
+<h2></h2>
+
+<ul><li><strong>param</strong>: <em>Function</em>  callback</li></ul>
+
+<p>This should be called once you are done using the GridFS.
+Functions called after this will throw errors. The callback is 
+executed after the closing of the GridFS database connection.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">close</span> = <span class="keyword">function</span>(<span class="variable">callback</span>){
+	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">close</span>();
+	<span class="keyword">if</span>(<span class="variable">callback</span>) <span class="variable">callback</span>();
+}</code></pre>
 </td>
 </tr>
 <tr class="code">
@@ -290,7 +301,6 @@ is recommended to handle errors.</p>
 </td>
 <td class="code">
 <pre><code><span class="variable">exports</span>.<span class="class">GridFS</span> = <span class="class">GridFS</span>;
-
 </code></pre>
 </td>
 </tr>	</body>
