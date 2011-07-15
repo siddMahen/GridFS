@@ -43,27 +43,6 @@ function GridFS(dbname,filesys){
 	if(!(this.dbcon)) throw new Error('Database creation failed.');
 	
 	this.open();
-	
-	/* !TODO: Perhaps add some optimizations which close and open the database on demand,
-			  ergo, after 30 seconds of inactivity the connection to the db is closed
-    		  if another request is made, then it will queue the request, open and then perform
-    
-	/*
-	this.i = setInterval(function(){
-		var tt = setTimeout(function(){
-			 clearInterval(self.i)
-			 console.log('final close');
-		 },20000);
-	
-		if(self.opQueue.length === 0){
-			 self.close();
-			 console.log(self.dbcon.state);
-		}else{
-			 clearTimeout(tt);
-			 self.open();
-		}
-	},10000);
-	*/
 };
 
 /**
@@ -72,7 +51,6 @@ function GridFS(dbname,filesys){
  * This is used internally to queue operations.
  *
  * @api private
- *
  */
 
 GridFS.prototype.performOp = function(){
@@ -110,8 +88,6 @@ GridFS.prototype.performOp = function(){
  * The callback takes an error and a result parameter, which provides information
  * about the file after it has been stored. 
  *
- * See putFile() for implementation notes.
- *
  * @api public
  */
 
@@ -133,8 +109,6 @@ GridFS.prototype.put = function(buffer, filename, mode, options, callback){
  *
  * The callback function takes an error and the return data as parameter.
  *
- * See getFile() for implementation notes.
- *
  * @api public
  */
 
@@ -155,8 +129,6 @@ GridFS.prototype.get = function(filename, callback){
  * @param {Function} callback
  *
  * The callback function takes an error as a parameter.
- *
- * See deleteFile() for implementation notes.
  *
  * @api public
  */
@@ -181,7 +153,7 @@ GridFS.prototype.delete = function(filename, callback){
  *			...
  *			myFS.open();
  *
- * By default, a GridFS object is return already open(). 
+ * By default, a GridFS instance is returned already open(). 
  *
  * @api public
  */
@@ -203,7 +175,7 @@ GridFS.prototype.open = function(){
  *
  * This should be called once you are done using the GridFS.
  * Functions called after this will throw errors. The callback is 
- * executed after the closing of the GridFS.
+ * executed after the closing of the GridFS database connection.
  *
  * @api public
  */
