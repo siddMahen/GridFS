@@ -1,17 +1,10 @@
 /**
  * @author Siddharth Mahendraker
- * @version 0.1
+ * @version 0.2
  */
 
 /**
  * _Module dependencies._
- *
- * These can also be run solely using mongoose using the
- * following syntax:
- *
- * @example var GridStore = require('mongoose').mongo.GridStore,
- *					   Db = require('mongoose').mongo.Db,
- *	   etc...
  */
 
 var GridStore = require('mongodb').GridStore,
@@ -38,13 +31,65 @@ var GridStore = require('mongodb').GridStore,
 
 function GridFS(dbname,filesys){
 
+	var self = this;
+
 	var host = process.env['MONGO_NODE_DRIVER_HOST'] != null ? process.env['MONGO_NODE_DRIVER_HOST'] : 'localhost';
 	var port = process.env['MONGO_NODE_DRIVER_PORT'] != null ? process.env['MONGO_NODE_DRIVER_PORT'] : Connection.DEFAULT_PORT;
 
 	this.dbcon = new Db(dbname, new Server(host, port, {}), { native_parser : true });
+	this.fs = filesys === undefined ? GridStore.DEFAULT_ROOT_COLLECTION : filesys;
+	this.opQueue = [];
 	
-	this.fs = filesys === undefined ? 'fs' : filesys;
+	if(!(this.dbcon)) throw new Error('Database creation failed.');
+	
+	this.open();
+	
+	/* !TODO: Perhaps add some optimizations which close and open the database on demand,
+			  ergo, after 30 seconds of inactivity the connection to the db is closed
+    		  if another request is made, then it will queue the request, open and then perform
+    
+	/*
+	this.i = setInterval(function(){
+		var tt = setTimeout(function(){
+			 clearInterval(self.i)
+			 console.log('final close');
+		 },20000);
+	
+		if(self.opQueue.length === 0){
+			 self.close();
+			 console.log(self.dbcon.state);
+		}else{
+			 clearTimeout(tt);
+			 self.open();
+		}
+	},10000);
+	*/
 };
+
+/**
+ * _Performs a queued operation._
+ *
+ * This is used internally to queue operations.
+ *
+ * @api private
+ *
+ */
+
+GridFS.prototype.performOp = function(){
+
+	if(this.dbcon.state === 'connected')
+	{
+		var self = this;
+	
+		var op = this.opQueue.shift();
+		var func = op.shift();
+		var args = op.pop();
+			
+		func.apply(self,args);
+		
+		if(this.opQueue.length > 0) this.performOp();
+	}
+}
 
 /**
  * _Stores a file._
@@ -52,8 +97,8 @@ function GridFS(dbname,filesys){
  * @param {Buffer} buffer
  * @param {String} filename 
  * @param {String} mode
- * @param {Object} options
- * @param {Function} callback (optional)
+ * @param {Object} options (optional)
+ * @param {Function} callback
  *
  * mode can be set to either 'w' to overwrite the content of the file
  * or 'w+' to append to the contents of the file.
@@ -61,37 +106,24 @@ function GridFS(dbname,filesys){
  * options can be used to specify the content_type, metadata and chunk_size
  *
  * @example var options = {"content\_type":"image/png","metadata":{ "person": "George"},"chunk\_size": 1024*4};
+ * 
+ * The callback takes an error and a result parameter, which provides information
+ * about the file after it has been stored. 
  *
- * The callback takes an error and a result parameter which provides information
- * such as MD5 hash. Although it is optional, the callback parameter 
- * is recommended to handle errors.
+ * See putFile() for implementation notes.
  *
  * @api public
  */
 
-GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
-
-	var fs = this.fs;
-		
-	options.root = options.root === undefined ? fs : options.root;
+GridFS.prototype.put = function(buffer, filename, mode, options, callback){
 	
-	this.dbcon.open(function(err, database){
-		if(err && callback) callback(err, null);
-		
-		var gridStore = new GridStore(database, filename, mode, options);
+	var self = this;
+	var args = [buffer, filename, mode, options, callback];
 
-		 gridStore.open(function(err, gridStore){
-		 	if(err && callback) callback(err, null);
-		 	gridStore.write(buffer, function(err, gridStore){
-		 		if(err && callback) callback(err, null);
-		 		gridStore.close(function(err, result){
-		 			database.close();
-		 			if (callback) callback(err, result);
-		 		});
-		 	});
-		 });
-	});
-};
+	this.opQueue.push([self.putFile,args]);	
+	
+	self.performOp();
+}
 
 /**
  * _Gets a file._
@@ -99,40 +131,22 @@ GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
  * @param {String} filename
  * @param {Function} callback
  *
- * The callback function takes an error and the return data as parameter
+ * The callback function takes an error and the return data as parameter.
+ *
+ * See getFile() for implementation notes.
  *
  * @api public
  */
 
-GridFS.prototype.getFile = function(filename, callback){
+GridFS.prototype.get = function(filename, callback){
 
-	var fs = this.fs;
-	// !TODO: Add support for length(size) and offset in read
-	this.dbcon.open(function(err, database){	
-		if(err) callback(err, null);
-
-		var gridStore = new GridStore(database, filename, 'r', { 'root'
-		 : fs });
-
-		GridStore.exist(database, filename, function(err, exists){
-			if(err) callback(err, null);
-			if(exists === true)
-			{
-				gridStore.open(function(err, gridStore){
-					if(err) callback(err, null);
-					gridStore.read(function(err, data){
-						database.close();
-						callback(err,data);
-					});
-				});				
-			}
-			else
-			{
-				callback(Error('This file does not exist'),null);
-			}	
-		});
-	});
-};	
+	var self = this;
+	var args = [filename, callback];
+	
+	this.opQueue.push([self.getFile,args]);	
+	
+	self.performOp();
+}
 
 /**
  * _Deletes a file._ 
@@ -140,19 +154,159 @@ GridFS.prototype.getFile = function(filename, callback){
  * @param {String} filename
  * @param {Function} callback
  *
- * The callback function takes an error as a parameter
+ * The callback function takes an error as a parameter.
+ *
+ * See deleteFile() for implementation notes.
  *
  * @api public
  */
 
+GridFS.prototype.delete = function(filename, callback){
+
+	var self = this;
+	var args = [filename, callback];
+	
+	this.opQueue.push([self.deleteFile,args]);	
+	
+	self.performOp();
+}
+
+/**
+ * _Opens the database connection._
+ *
+ * This method should not normally be implemented, unless you have closed the connection
+ * and wish to open it again.
+ *
+ * @example myFS.put(foo, bar, 'w', function(){ myFS.close(); });
+ *			...
+ *			myFS.open();
+ *
+ * By default, a GridFS object is return already open(). 
+ *
+ * @api public
+ */
+
+GridFS.prototype.open = function(){
+	
+	var self = this;
+	
+	this.dbcon.open(function(err){
+		if(err) throw err;
+		self.performOp();
+	});
+}
+
+/**
+ * _Closes the database connection._
+ *
+ * @param {Function} callback
+ *
+ * This should be called once you are done using the GridFS.
+ * Functions called after this will throw errors. The callback is 
+ * executed after the closing of the GridFS.
+ *
+ * @api public
+ */
+
+GridFS.prototype.close = function(callback){
+	this.dbcon.close();
+	if(callback) callback();
+}
+
+/**
+ * _Stores a file._
+ *
+ * This is the implementation of put(). 
+ *
+ * @api private
+ */
+
+GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
+
+	var args = Array.prototype.slice.call(arguments, 0);
+ 	 	
+ 	if(typeof options === 'function'){
+ 		args.pop();
+ 		callback = args.pop();
+ 		options = {};
+ 	}
+
+	var fs = this.fs;
+	var db = this.dbcon;
+		
+	if(!(buffer instanceof Buffer)) return callback(new Error('A Buffer object is required.'),null);
+		
+	options.root = options.root === undefined ? fs : options.root;
+		
+	var gridStore = new GridStore(db, filename, mode, options);
+
+	 gridStore.open(function(err, gridStore){
+	 	if(err) return callback(err, null);
+	 	gridStore.write(buffer, function(err, gridStore){
+	 		if(err) return callback(err, null);
+	 		gridStore.close(function(err, result){
+	 			callback(err, result);
+	 		});
+	 	});
+	 });
+};
+
+/**
+ * _Gets a file._
+ *
+ * This is the implementation of get().
+ *
+ * @api private
+ */
+
+GridFS.prototype.getFile = function(filename, callback){
+
+	var fs = this.fs;
+	var db = this.dbcon;
+	// !TODO: Add support for length(size) and offset in read
+	
+	var gridStore = new GridStore(db, filename, 'r', { 'root': fs });
+
+	GridStore.exist(db, filename, function(err, exists){
+		if(err) return callback(err, null);
+		
+		if(exists === true){
+			gridStore.open(function(err, gridStore){
+				if(err) return callback(err, null);
+				gridStore.read(function(err, data){
+					callback(err,data);
+				});
+			});				
+		}
+		else{
+			callback(Error('This file does not exist'),null);
+		}	
+	});
+};	
+
+/**
+ * _Deletes a file._ 
+ *
+ * This is the implementation of delete().
+ *
+ * @api private
+ */
+
 GridFS.prototype.deleteFile = function(filename, callback){
 
-	this.dbcon.open(function(err,database){
-		if(err && callback) callback(err);
-		GridStore.unlink(database,filename,function(){
-			database.close();
-			if(callback) callback(null);
-		});
+	var db = this.dbcon;
+	
+	GridStore.exist(db, filename, function(err,exists){
+		if(err) return callback(err);
+	
+		if(exists){
+			GridStore.unlink(db,filename,function(){
+				if(callback) callback(null);
+			});
+		}
+		else{
+			callback(new Error('The file you wish to delete does not exist.'));
+		}
 	});
 };
 
@@ -161,4 +315,3 @@ GridFS.prototype.deleteFile = function(filename, callback){
  */
  
 exports.GridFS = GridFS;
-
