@@ -16,11 +16,11 @@ var GridFS = require('path/to/GridFS.js').GridFS;
 ### Tests:
 
 To run the tests:
-<pre>
 <code>
+<pre>
 make tests
-</code>
 </pre>
+</code>
 
 ### Documentation:
 
