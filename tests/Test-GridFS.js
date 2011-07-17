@@ -8,7 +8,7 @@ var util = require("util");
 var EventEmitter = require('events').EventEmitter
 
 var assert = require('assert');
-var GridFS = require('../GridFS');
+var GridFS = require('../lib/GridFS');
 
 var buffer = new Buffer('Hello Siddharth');
 var secBuffer = new Buffer('Hello Rohan');

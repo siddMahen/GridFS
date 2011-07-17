@@ -4,5 +4,8 @@
 
 ### GridFS
 
-- Add length and offset to get()
 - Figure out auto-timouts for dbcon
+
+### GridStream
+
+- Get this working...

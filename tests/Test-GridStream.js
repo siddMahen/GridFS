@@ -1,6 +1,6 @@
 
-var GridStream = require('../GridStream');
-var GridFS = require('../GridFS');
+var GridStream = require('../lib/GridStream');
+var GridFS = require('../lib/GridFS');
 
 
 var FS = new GridFS('test');

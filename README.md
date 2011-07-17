@@ -4,12 +4,12 @@ Simple GridFS capabilities built on [node-mongodb-native](https://github.com/chr
  
 * * *
 
-### Installation:
+### Usage:
 
-To install, simply include GridFS.js in your project.
+To use, simply include GridFS.js in your project.
 <code>
 <pre>
-var GridFS = require('./GridFS.js').GridFS;
+var GridFS = require('path/to/GridFS.js').GridFS;
 </pre>
 </code>
 
