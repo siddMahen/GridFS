@@ -32,5 +32,5 @@ docs:
 	@echo `git push origin gh-pages`
 	@echo `git checkout master` 
 	@echo \#\#\# END DOCS \#\#\#
-        @echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
+	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 
