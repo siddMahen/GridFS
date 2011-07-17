@@ -4,8 +4,8 @@
 
 ### GridFS
 
-- Figure out auto-timouts for dbcon
+- Figure out auto-timouts for the database connection.
 
 ### GridStream
 
-- Get this working...
+- Figure out how to close the read stream once it's done.

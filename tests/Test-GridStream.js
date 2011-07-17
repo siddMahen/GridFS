@@ -3,12 +3,27 @@ var GridStream = require('../lib/GridStream');
 var GridFS = require('../lib/GridFS');
 
 
-var FS = new GridFS('test');
+var FStream = new GridStream('test','test','w',function(err, gs){
+	if(err) console.log(err);
+	gs.write('Hey ;)');
 
-var FStream = new GridStream(FS,'test','w+',function(err, GridStream){
+	gs.close();
+});
+
+var stream = new GridStream('test','test','r',{ 'chunk_size' : 2 }, function(err, gs){
+
+	if(err) console.log(err);
+
+	gs.on('data', function(err, data){
+		if(err) console.log(err);
+		console.log(data);
+		gs.close();
+
+	});
 	
-	setTimeout(function(){
-		GridStream.close();
-		console.log('Closed');
-	},1000);
+	gs.on('complete', function(){
+		
+	});
+	
+	gs.read();
 });
