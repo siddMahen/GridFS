@@ -6,7 +6,10 @@ TESTFILENAMES := $(notdir $(TESTFILES))
 
 FILES := $(wildcard $(LIBFOLDER)*.js)
 
-.PHONY : tests docs
+.PHONY : all tests docs
+all: tests docs
+	
+
 tests:
 	@echo \#\#\# START \#\#\#
 	@for file in $(TESTFILENAMES); do \
