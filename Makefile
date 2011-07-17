@@ -11,14 +11,15 @@ all: tests docs
 	
 
 tests:
-	@echo \#\#\# START \#\#\#
+	@echo \#\#\# START TESTS \#\#\#
 	@for file in $(TESTFILENAMES); do \
                 echo \#\#\# $$file \#\#\#; \
                 node $(TESTFOLDER)$$file; \
         done
-	@echo \#\#\# END \#\#\# 
+	@echo \#\#\# END TESTS \#\#\# 
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 docs:
+	@echo \#\#\# START DOCS \#\#\#
 	@echo `touch ../tempindex.html`
 	@echo `dox -t 'GridFS' \
 	-d 'Simple GridFS capabilities built on [node-mongodb-native]\
@@ -30,5 +31,6 @@ docs:
 	@echo `git commit -m 'Updated docs.'`
 	@echo `git push origin gh-pages`
 	@echo `git checkout master` 
-
+	@echo \#\#\# END DOCS \#\#\#
+        @echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 
