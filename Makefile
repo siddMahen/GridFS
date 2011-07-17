@@ -22,9 +22,9 @@ docs:
 	@echo `git checkout gh-pages`
 	@echo `git branch -l`
 	@echo `mv ../tempindex.html index.html`
-	#@echo `git add index.html`
-	#@echo `git commit -m 'Updated docs.'`
-	#@echo `git push origin gh-pages`
-	#@echo `git checkout master` 
+	@echo `git add index.html`
+	@echo `git commit -m 'Updated docs.'`
+	@echo `git push origin gh-pages`
+	@echo `git checkout master` 
 
 
