@@ -62,7 +62,7 @@ GridFS.prototype.performOp = function(){
 		var op = this.opQueue.shift();
 		var func = op.shift();
 		var args = op.pop();
-			
+		
 		func.apply(self,args);
 		
 		if(this.opQueue.length > 0) this.performOp();
@@ -94,9 +94,9 @@ GridFS.prototype.performOp = function(){
 GridFS.prototype.put = function(buffer, filename, mode, options, callback){
 	
 	var self = this;
-	var args = [buffer, filename, mode, options, callback];
+	var args = arguments;
 
-	this.opQueue.push([self.putFile,args]);	
+	this.opQueue.push([self._put,args]);	
 	
 	self.performOp();
 }
@@ -105,19 +105,25 @@ GridFS.prototype.put = function(buffer, filename, mode, options, callback){
  * _Gets a file._
  *
  * @param {String} filename
+ * @param {Number} length (optional)
+ * @param {Number} offset (optional) 
+ * @param {Object} options (optional)
  * @param {Function} callback
  *
- * The callback function takes an error and the return data as parameter.
+ * The callback function takes an error and data as parameters. The data object is 
+ * a string.
+ * 
+ * @see put() for options details.
  *
  * @api public
  */
 
-GridFS.prototype.get = function(filename, callback){
+GridFS.prototype.get = function(filename, length, offset, options, callback){
 
 	var self = this;
-	var args = [filename, callback];
+	var args = arguments;
 	
-	this.opQueue.push([self.getFile,args]);	
+	this.opQueue.push([self._get,args]);	
 	
 	self.performOp();
 }
@@ -136,9 +142,9 @@ GridFS.prototype.get = function(filename, callback){
 GridFS.prototype.delete = function(filename, callback){
 
 	var self = this;
-	var args = [filename, callback];
+	var args = arguments;
 	
-	this.opQueue.push([self.deleteFile,args]);	
+	this.opQueue.push([self._delete,args]);	
 	
 	self.performOp();
 }
@@ -164,7 +170,7 @@ GridFS.prototype.open = function(){
 	
 	this.dbcon.open(function(err){
 		if(err) throw err;
-		self.performOp();
+		if(self.opQueue.length > 0) self.performOp();
 	});
 }
 
@@ -181,8 +187,13 @@ GridFS.prototype.open = function(){
  */
 
 GridFS.prototype.close = function(callback){
-	this.dbcon.close();
-	if(callback) callback();
+
+	var self = this;
+	var args = arguments;
+	
+	this.opQueue.push([self._close,args]);	
+	
+	self.performOp();
 }
 
 /**
@@ -193,12 +204,11 @@ GridFS.prototype.close = function(callback){
  * @api private
  */
 
-GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
+GridFS.prototype._put = function(buffer, filename, mode, options, callback){
 
 	var args = Array.prototype.slice.call(arguments, 0);
  	 	
  	if(typeof options === 'function'){
- 		args.pop();
  		callback = args.pop();
  		options = {};
  	}
@@ -214,7 +224,7 @@ GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
 
 	 gridStore.open(function(err, gridStore){
 	 	if(err) return callback(err, null);
-	 	gridStore.write(buffer, function(err, gridStore){
+	 	gridStore.writeBuffer(buffer, function(err, gridStore){
 	 		if(err) return callback(err, null);
 	 		gridStore.close(function(err, result){
 	 			callback(err, result);
@@ -231,27 +241,24 @@ GridFS.prototype.putFile = function(buffer, filename, mode, options, callback){
  * @api private
  */
 
-GridFS.prototype.getFile = function(filename, callback){
+GridFS.prototype._get = function(filename, length, offset, options, callback){
 
+	var args = Array.prototype.slice.call(arguments, 1);
 	var fs = this.fs;
 	var db = this.dbcon;
-	// !TODO: Add support for length(size) and offset in read
 	
-	var gridStore = new GridStore(db, filename, 'r', { 'root': fs });
-
-	GridStore.exist(db, filename, function(err, exists){
+	callback = args.pop();
+	length = args.length ? args.shift() : null;
+	offset = args.length ? args.shift() : null;
+	options = args.length ? args.shift() : null;
+			
+	GridStore.exist(db, filename, fs, function(err, exists){
 		if(err) return callback(err, null);
-		
 		if(exists === true){
-			gridStore.open(function(err, gridStore){
-				if(err) return callback(err, null);
-				gridStore.read(function(err, data){
-					callback(err,data);
-				});
-			});				
+			GridStore.read(db, filename, length, offset, options, callback);				
 		}
 		else{
-			callback(Error('This file does not exist'),null);
+			callback(new Error('The file you wish to read does not exist.'),null);
 		}	
 	});
 };	
@@ -264,7 +271,7 @@ GridFS.prototype.getFile = function(filename, callback){
  * @api private
  */
 
-GridFS.prototype.deleteFile = function(filename, callback){
+GridFS.prototype._delete = function(filename, callback){
 
 	var db = this.dbcon;
 	
@@ -283,7 +290,21 @@ GridFS.prototype.deleteFile = function(filename, callback){
 };
 
 /**
+ * _Closes the database connection._
+ *
+ * This is the implementation of close().
+ *
+ * @api private
+ */
+ 
+GridFS.prototype._close = function(filename, callback){
+
+ 	this.dbcon.close();
+	if(callback) callback();
+}
+
+/**
  * _Exports._
  */
  
-exports.GridFS = GridFS;
+module.exports = GridFS;
