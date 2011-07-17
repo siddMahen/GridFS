@@ -28,7 +28,7 @@ docs:
 	@echo `mv ../tempindex.html index.html`
 	@echo `git add index.html`
 	@echo `git commit -q -m 'Updated docs.'`
-	@echo `git push origin gh-pages`
+	@echo `git push -q origin gh-pages`
 	@echo `git checkout -q master` 
 	@echo \#\#\# END DOCS \#\#\#
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
