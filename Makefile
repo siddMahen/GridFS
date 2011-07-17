@@ -20,6 +20,7 @@ docs:
 	(https://github.com/christkv/node-mongodb-native "node-mongodb-native").' \
 	$(FILES) > ../tempindex.html`
 	@echo `git checkout gh-pages`
+	@echo `git branch -l`
 	@echo `mv ../tempindex.html index.html`
 	#@echo `git add index.html`
 	#@echo `git commit -m 'Updated docs.'`
