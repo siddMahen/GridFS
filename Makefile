@@ -1,8 +1,10 @@
 TESTFOLDER := tests/
+LIBFOLDER := lib/
+
 TESTFILES := $(wildcard $(TESTFOLDER)Test-*.js)
 TESTFILENAMES := $(notdir $(TESTFILES))
 
-FILES := $(wildcard *.js)
+FILES := $(wildcard $(LIBFOLDER)*.js)
 
 .PHONY : tests docs
 tests:
@@ -20,7 +22,6 @@ docs:
 	(https://github.com/christkv/node-mongodb-native "node-mongodb-native").' \
 	$(FILES) > ../tempindex.html`
 	@echo `git checkout gh-pages`
-	@echo `git branch -l`
 	@echo `mv ../tempindex.html index.html`
 	@echo `git add index.html`
 	@echo `git commit -m 'Updated docs.'`
