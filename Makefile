@@ -14,16 +14,16 @@ tests:
 	@echo \#\#\# END \#\#\# 
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 docs:
-	@echo `touch tempindex.html`
+	@echo `touch ../tempindex.html`
 	@echo `dox -t 'GridFS' \
 	-d 'Simple GridFS capabilities built on [node-mongodb-native]\
 	(https://github.com/christkv/node-mongodb-native "node-mongodb-native").' \
-	$(FILES) > tempindex.html`
+	$(FILES) > ../tempindex.html`
 	@echo `git checkout gh-pages`
-	@echo `mv tempindex.html index.html`
-	@echo `git add index.html`
-	@echo `git commit -m 'Updated docs.'`
-	@echo `git push origin gh-pages`
-	@echo `git checkout master` 
+	@echo `mv ../tempindex.html index.html`
+	#@echo `git add index.html`
+	#@echo `git commit -m 'Updated docs.'`
+	#@echo `git push origin gh-pages`
+	#@echo `git checkout master` 
 
 
