@@ -108,7 +108,7 @@ code .this { color: #19469D; }</style>
 		</script>
 	</head>
 	<body>
-<table id="source"><tbody><tr><td><h1>GridFS</h1><p>Simple GridFS capabilities built on <a href="https://github.com/christkv/node-mongodb-native" title="node-mongodb-native">node-mongodb-native</a>.</p></td><td></td></tr><tr class="filename"><td><h2 id="GridFS/GridFS.js"><a href="#">GridFS</a></h2></td><td>GridFS/GridFS.js</td></tr><tr class="code">
+<table id="source"><tbody><tr><td><h1>GridFS</h1><p>Simple GridFS capabilities built on <a href="https://github.com/christkv/node-mongodb-native" title="node-mongodb-native">node-mongodb-native</a>.</p></td><td></td></tr><tr class="filename"><td><h2 id="GridFS.js"><a href="#">GridFS</a></h2></td><td>GridFS.js</td></tr><tr class="code">
 <td class="docs">
 <ul><li><strong>author</strong>: <em>Siddharth</em>
 Mahendraker</li><li><strong>version</strong>: <em>0</em>
@@ -189,9 +189,9 @@ about the file after it has been stored. </p>
 <pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">put</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
 	
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
-	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">buffer</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>];
+	<span class="keyword">var</span> <span class="variable">args</span> = <span class="variable">arguments</span>;
 
-	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">putFile</span>,<span class="variable">args</span>]);	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">_put</span>,<span class="variable">args</span>]);	
 	
 	<span class="variable">self</span>.<span class="variable">performOp</span>();
 }</code></pre>
@@ -203,19 +203,21 @@ about the file after it has been stored. </p>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>Number</em>  length (optional)</p></li><li><p><strong>param</strong>: <em>Number</em>  offset (optional) </p></li><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
 
-<p>The callback function takes an error and the return data as parameter.</p>
+<p>The callback function takes an error and data as parameters. The data object is 
+a string.</p>
 
-<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+<ul><li><p><strong>see</strong>: <em>put</em>
+() for options details.</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">get</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
+<pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">get</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">length</span>, <span class="variable">offset</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
 
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
-	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">filename</span>, <span class="variable">callback</span>];
+	<span class="keyword">var</span> <span class="variable">args</span> = <span class="variable">arguments</span>;
 	
-	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">getFile</span>,<span class="variable">args</span>]);	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">_get</span>,<span class="variable">args</span>]);	
 	
 	<span class="variable">self</span>.<span class="variable">performOp</span>();
 }</code></pre>
@@ -237,9 +239,9 @@ about the file after it has been stored. </p>
 <pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="keyword">delete</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">callback</span>){
 
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
-	<span class="keyword">var</span> <span class="variable">args</span> = [<span class="variable">filename</span>, <span class="variable">callback</span>];
+	<span class="keyword">var</span> <span class="variable">args</span> = <span class="variable">arguments</span>;
 	
-	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">deleteFile</span>,<span class="variable">args</span>]);	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">_delete</span>,<span class="variable">args</span>]);	
 	
 	<span class="variable">self</span>.<span class="variable">performOp</span>();
 }</code></pre>
@@ -268,7 +270,7 @@ and wish to open it again.</p>
 	
 	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>){
 		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">throw</span> <span class="variable">err</span>;
-		<span class="variable">self</span>.<span class="variable">performOp</span>();
+		<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">0</span>) <span class="variable">self</span>.<span class="variable">performOp</span>();
 	});
 }</code></pre>
 </td>
@@ -289,8 +291,13 @@ executed after the closing of the GridFS database connection.</p>
 </td>
 <td class="code">
 <pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">close</span> = <span class="keyword">function</span>(<span class="variable">callback</span>){
-	<span class="this">this</span>.<span class="variable">dbcon</span>.<span class="variable">close</span>();
-	<span class="keyword">if</span>(<span class="variable">callback</span>) <span class="variable">callback</span>();
+
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	<span class="keyword">var</span> <span class="variable">args</span> = <span class="variable">arguments</span>;
+	
+	<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">push</span>([<span class="variable">self</span>.<span class="variable">_close</span>,<span class="variable">args</span>]);	
+	
+	<span class="variable">self</span>.<span class="variable">performOp</span>();
 }</code></pre>
 </td>
 </tr>
@@ -300,7 +307,81 @@ executed after the closing of the GridFS database connection.</p>
  </p>
 </td>
 <td class="code">
-<pre><code><span class="variable">exports</span>.<span class="class">GridFS</span> = <span class="class">GridFS</span>;
+<pre><code><span class="variable">module</span>.<span class="variable">exports</span> = <span class="class">GridFS</span>;
+</code></pre>
+</td>
+</tr><tr class="filename"><td><h2 id="GridStream.js"><a href="#">GridStream</a></h2></td><td>GridStream.js</td></tr><tr class="code">
+<td class="docs">
+<ul><li><strong>author</strong>: <em>Siddharth</em>
+Mahendraker</li><li><strong>version</strong>: <em>0</em>
+.1</li></ul>
+</td>
+<td class="code">
+
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Module dependencies.</em>
+ </p>
+</td>
+<td class="code">
+
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p> Work in progress....
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">var</span> <span class="class">GridFS</span> = <span class="variable">require</span>(<span class="string">'./GridFS'</span>);
+ 
+<span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
+	<span class="variable">stream</span> = <span class="variable">require</span>(<span class="string">'stream'</span>);
+
+<span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
+	<span class="class">Db</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Db</span>,
+	<span class="class">Server</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Server</span>,
+	<span class="class">Connection</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Connection</span>;
+	
+<span class="keyword">function</span> <span class="class">GridStream</span>(<span class="variable">gridFS</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
+
+	<span class="keyword">var</span> <span class="variable">args</span> = <span class="class">Array</span>.<span class="variable">prototype</span>.<span class="variable">slice</span>.<span class="variable">call</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>);
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	
+	<span class="keyword">if</span>((<span class="keyword">typeof</span> <span class="variable">options</span> === <span class="string">'function'</span>) &<span class="variable">amp</span>;&<span class="variable">amp</span>; !(<span class="variable">callback</span>)){
+ 		<span class="variable">callback</span> = <span class="variable">args</span>.<span class="variable">pop</span>();
+ 		<span class="variable">options</span> = {};
+ 	}
+ 	
+ 	<span class="keyword">if</span>(!(<span class="variable">gridFS</span> <span class="variable">instanceof</span> <span class="class">GridFS</span>)) <span class="keyword">return</span> <span class="variable">callback</span>(<span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'A GridFS object is required.'</span>),<span class="keyword">null</span>);
+ 	
+ 	<span class="this">this</span>.<span class="variable">gridFS</span> = <span class="variable">gridFS</span>;
+ 	<span class="this">this</span>.<span class="variable">filename</span> = <span class="variable">filename</span>;
+ 	<span class="this">this</span>.<span class="variable">mode</span> = <span class="variable">mode</span> === <span class="string">'r'</span> ? <span class="string">'r'</span> : <span class="variable">mode</span>;
+ 	<span class="this">this</span>.<span class="variable">options</span> = <span class="variable">options</span>;
+ 	
+ 	<span class="this">this</span>.<span class="variable">options</span>.<span class="variable">root</span> = <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">root</span> === <span class="variable">undefined</span> ? <span class="this">this</span>.<span class="variable">gridFS</span>.<span class="variable">fs</span> : <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">root</span>;
+ 	
+ 	<span class="variable">callback</span>(<span class="keyword">null</span>, <span class="this">this</span>);
+};
+
+<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">write</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
+
+	<span class="keyword">if</span>(!(<span class="variable">buffer</span> <span class="variable">instanceof</span> <span class="class">Buffer</span>)) <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">buffer</span>);
+	<span class="this">this</span>.<span class="variable">gridFS</span>.<span class="variable">put</span>(<span class="variable">buffer</span>, <span class="this">this</span>.<span class="variable">filename</span>, <span class="string">'w+'</span>, <span class="this">this</span>.<span class="variable">options</span>, <span class="keyword">function</span>(){});
+}
+
+<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">read</span> = <span class="keyword">function</span>(){
+	
+}
+
+<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">close</span> = <span class="keyword">function</span>(){
+	<span class="this">this</span>.<span class="variable">gridFS</span>.<span class="variable">close</span>();
+}
+
+<span class="variable">module</span>.<span class="variable">exports</span> = <span class="class">GridStream</span>;
 </code></pre>
 </td>
 </tr>	</body>
