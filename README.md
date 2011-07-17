@@ -6,12 +6,21 @@ Simple GridFS capabilities built on [node-mongodb-native](https://github.com/chr
 
 ### Usage:
 
-To use, simply include GridFS.js in your project.
+To use, simply include GridFS.js in your project:
 <code>
 <pre>
 var GridFS = require('path/to/GridFS.js').GridFS;
 </pre>
 </code>
+
+### Tests:
+
+To run the tests:
+<pre>
+<code>
+make tests
+</code>
+</pre>
 
 ### Documentation:
 
