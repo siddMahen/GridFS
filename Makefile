@@ -1,4 +1,5 @@
-TESTFILES := $(wildcard test/Test-*.js)
+TESTFOLDER := tests/
+TESTFILES := $(wildcard $(TESTFOLDER)Test-*.js)
 TESTFILENAMES := $(notdir $(TESTFILES))
 
 FILES := $(wildcard *.js)
@@ -8,7 +9,7 @@ tests:
 	@echo \#\#\# START \#\#\#
 	@for file in $(TESTFILENAMES); do \
                 echo \#\#\# $$file \#\#\#; \
-                node test/$$file; \
+                node $(TESTFOLDER)$$file; \
         done
 	@echo \#\#\# END \#\#\# 
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
