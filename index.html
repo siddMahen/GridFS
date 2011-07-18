@@ -175,7 +175,7 @@ If nothing is specified then the default 'fs' will be used.</p>
 <p>mode can be set to either 'w' to overwrite the content of the file
 or 'w+' to append to the contents of the file.</p>
 
-<p>options can be used to specify the content<em>type, metadata and chunk</em>size</p>
+<p>options can be used to specify the content_type, metadata and chunk_size</p>
 
 <ul><li><strong>example</strong>: <em>var</em>
 options = {"content_type":"image/png","metadata":{ "person": "George"},"chunk_size": 1024*4};</li></ul>
@@ -209,7 +209,7 @@ about the file after it has been stored. </p>
 a string.</p>
 
 <ul><li><p><strong>see</strong>: <em>put</em>
-() for options details.</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+() for option details.</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="class">GridFS</span>.<span class="variable">prototype</span>.<span class="variable">get</span> = <span class="keyword">function</span>(<span class="variable">filename</span>, <span class="variable">length</span>, <span class="variable">offset</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
@@ -284,8 +284,9 @@ and wish to open it again.</p>
 <ul><li><strong>param</strong>: <em>Function</em>  callback</li></ul>
 
 <p>This should be called once you are done using the GridFS.
-Functions called after this will throw errors. The callback is 
-executed after the closing of the GridFS database connection.</p>
+Functions called after this will be queued to perform when 
+the Grid is reopened. The callback is executed after the 
+closing of the GridFS database connection.</p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
@@ -326,15 +327,6 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
  </p>
 </td>
 <td class="code">
-
-</td>
-</tr>
-<tr class="code">
-<td class="docs">
-<p> Work in progress....
- </p>
-</td>
-<td class="code">
 <pre><code><span class="keyword">var</span> <span class="class">GridFS</span> = <span class="variable">require</span>(<span class="string">'./GridFS'</span>);
  
 <span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
@@ -344,9 +336,16 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 	<span class="class">Db</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Db</span>,
 	<span class="class">Server</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Server</span>,
 	<span class="class">Connection</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Connection</span>,
-	<span class="class">Chunk</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Chunk</span>;
-	
-<span class="keyword">function</span> <span class="class">GridStream</span>(<span class="variable">dbname</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
+	<span class="class">Chunk</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Chunk</span>;</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p> Work in progress....
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">GridStream</span>(<span class="variable">dbname</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
 
 	<span class="variable">events</span>.<span class="class">EventEmitter</span>.<span class="variable">call</span>(<span class="this">this</span>);
 
@@ -363,14 +362,15 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 
 	<span class="this">this</span>.<span class="variable">db</span> = <span class="keyword">new</span> <span class="class">Db</span>(<span class="variable">dbname</span>, <span class="keyword">new</span> <span class="class">Server</span>(<span class="variable">host</span>, <span class="variable">port</span>, {}), { <span class="variable">native_parser</span> : <span class="variable">true</span> });
 	<span class="this">this</span>.<span class="variable">filename</span> = <span class="variable">filename</span>;
- 	<span class="this">this</span>.<span class="variable">mode</span> = <span class="variable">mode</span>;
+ 	<span class="this">this</span>.<span class="variable">readable</span> = <span class="variable">mode</span> === <span class="string">'r'</span> ? <span class="variable">true</span> : <span class="variable">false</span>;
+ 	<span class="this">this</span>.<span class="variable">writable</span> = <span class="variable">mode</span> === (<span class="string">'w'</span> || <span class="string">'w+'</span>) ? <span class="variable">true</span> : <span class="variable">false</span>;
  	<span class="this">this</span>.<span class="variable">options</span> = <span class="variable">options</span>;
  	<span class="this">this</span>.<span class="variable">head</span> = <span class="number integer">0</span>;
  	
  	<span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>] = <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>] === <span class="variable">undefined</span> ? <span class="class">GridStore</span>.<span class="class">DEFAULT_ROOT_COLLECTION</span> : <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>];
  	<span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>] = <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>] === <span class="variable">undefined</span> ? <span class="class">Chunk</span>.<span class="class">DEFAULT_CHUNK_SIZE</span> : <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>];
  	
- 	<span class="this">this</span>.<span class="variable">gridStore</span> = <span class="keyword">new</span> <span class="class">GridStore</span>(<span class="this">this</span>.<span class="variable">db</span>, <span class="this">this</span>.<span class="variable">filename</span>, <span class="this">this</span>.<span class="variable">mode</span>, <span class="this">this</span>.<span class="variable">options</span>);
+ 	<span class="this">this</span>.<span class="variable">gridStore</span> = <span class="keyword">new</span> <span class="class">GridStore</span>(<span class="this">this</span>.<span class="variable">db</span>, <span class="this">this</span>.<span class="variable">filename</span>, <span class="variable">mode</span>, <span class="this">this</span>.<span class="variable">options</span>);
  	
  	<span class="this">this</span>.<span class="variable">db</span>.<span class="variable">open</span>(<span class="keyword">function</span>(<span class="variable">err</span>){
 		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
@@ -378,6 +378,7 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 			<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">callback</span>(<span class="variable">err</span>, <span class="keyword">null</span>);
 			<span class="variable">self</span>.<span class="variable">gridStore</span> = <span class="variable">gs</span>;
 			<span class="variable">callback</span>(<span class="keyword">null</span>, <span class="variable">self</span>);
+			<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">readable</span>) <span class="variable">self</span>.<span class="variable">_read</span>();
 		});
 	});
 };
@@ -386,25 +387,25 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 
 <span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">write</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
 	
-	<span class="keyword">if</span>((<span class="this">this</span>.<span class="variable">mode</span> === <span class="string">'w'</span>)||(<span class="this">this</span>.<span class="variable">mode</span> === <span class="string">'w+'</span>))
-	{
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	
+	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">writable</span>){
 		<span class="keyword">if</span>(!(<span class="variable">buffer</span> <span class="variable">instanceof</span> <span class="class">Buffer</span>)) <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">buffer</span>);
+		
 		<span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">writeBuffer</span>(<span class="variable">buffer</span>,<span class="keyword">function</span>(<span class="variable">err</span>){
 			<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">throw</span> <span class="variable">err</span>;
+			<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'drain'</span>);
 		});
-	}
-	<span class="keyword">else</span>
-	{
+	}<span class="keyword">else</span>{
 	 	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not writable.'</span>);
 	}
 }
 
-<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">read</span> = <span class="keyword">function</span>(){
+<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">_read</span> = <span class="keyword">function</span>(){
 
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 
-	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">mode</span> === <span class="string">'r'</span>)
-	{
+	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">readable</span>){
 		<span class="keyword">var</span> <span class="variable">len</span>;
 			
 		<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">head</span> + <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">chunk_size</span> &<span class="variable">gt</span>; <span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">length</span>)
@@ -412,18 +413,34 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 		<span class="keyword">else</span>
 			<span class="variable">len</span> = <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">chunk_size</span>;
 		
-		<span class="class">GridStore</span>.<span class="variable">read</span>(<span class="this">this</span>.<span class="variable">db</span>, <span class="this">this</span>.<span class="variable">filename</span>, <span class="variable">len</span>, <span class="this">this</span>.<span class="variable">head</span>, { <span class="string">'root'</span> : <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">root</span> }, <span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">data</span>){
-			<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'data'</span>, <span class="variable">err</span>, <span class="variable">data</span>);
+		<span class="class">GridStore</span>.<span class="variable">read</span>(<span class="variable">self</span>.<span class="variable">db</span>, <span class="variable">self</span>.<span class="variable">filename</span>, <span class="variable">len</span>, <span class="variable">self</span>.<span class="variable">head</span>, { <span class="string">'root'</span> : <span class="variable">self</span>.<span class="variable">options</span>.<span class="variable">root</span> }, <span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">data</span>){
+			<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'data'</span>, <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">data</span>));
+					
+			<span class="variable">self</span>.<span class="variable">head</span> += <span class="variable">len</span>;
+			<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">head</span> !== <span class="variable">self</span>.<span class="variable">gridStore</span>.<span class="variable">length</span>)
+				<span class="variable">self</span>.<span class="variable">_read</span>();
+			<span class="keyword">else</span>{
+				<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'end'</span>);
+				<span class="variable">self</span>.<span class="variable">close</span>();	
+			}
 		});
-		
-		<span class="this">this</span>.<span class="variable">head</span> += <span class="variable">len</span>;
-		<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">head</span> !== <span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">length</span>)
-			<span class="this">this</span>.<span class="variable">read</span>();
-	}
-	<span class="keyword">else</span>
-	{
+	}<span class="keyword">else</span>{
 	 	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not readable.'</span>);
 	}
+}
+
+<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">end</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
+
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+
+	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">writable</span>){
+		<span class="keyword">if</span>(!(<span class="variable">buffer</span> <span class="variable">instanceof</span> <span class="class">Buffer</span>)) <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">buffer</span>);
+		
+		<span class="this">this</span>.<span class="variable">write</span>(<span class="variable">buffer</span>);
+		<span class="this">this</span>.<span class="variable">close</span>();
+	}<span class="keyword">else</span>{
+		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not writable.'</span>);
+	}		
 }
 
 <span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">close</span> = <span class="keyword">function</span>(){
@@ -433,6 +450,7 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 	<span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">close</span>(<span class="keyword">function</span>(<span class="variable">err</span>,<span class="variable">result</span>){
 		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">throw</span> <span class="variable">err</span>;
 		<span class="variable">self</span>.<span class="variable">db</span>.<span class="variable">close</span>();
+		<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'close'</span>);
 	});
 }
 
