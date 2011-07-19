@@ -315,7 +315,7 @@ closing of the GridFS database connection.</p>
 <td class="docs">
 <ul><li><strong>author</strong>: <em>Siddharth</em>
 Mahendraker</li><li><strong>version</strong>: <em>0</em>
-.1</li></ul>
+.2</li></ul>
 </td>
 <td class="code">
 
@@ -327,10 +327,8 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
  </p>
 </td>
 <td class="code">
-<pre><code><span class="keyword">var</span> <span class="class">GridFS</span> = <span class="variable">require</span>(<span class="string">'./GridFS'</span>);
- 
-<span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
-	<span class="variable">events</span> = <span class="variable">require</span>(<span class="string">'events'</span>);
+<pre><code><span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
+	<span class="variable">stream</span> = <span class="variable">require</span>(<span class="string">'stream'</span>).<span class="class">Stream</span>;
 
 <span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
 	<span class="class">Db</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Db</span>,
@@ -341,13 +339,44 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 </tr>
 <tr class="code">
 <td class="docs">
-<p> Work in progress....
- </p>
+<p><em>Creates an initialized GridStream instance.</em></p>
+
+<ul><li><strong>class</strong>: <em>GridStream</em></li></ul>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  dbname</p></li><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>String</em>  mode</p></li><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
+
+<p>GridStream is a subclass of Stream, meaning it is (almost) compatible with pipe().
+They emit all of the events that normal streams do, with the addition of 'pause'
+and 'resume', which are emitted upon pause and resume.</p>
+
+<p>GridStream is a unidirectional stream.</p>
+
+<p>The mode parameter takes one of three values 'w', 'w+' and 'r',
+'w' is used to overwrite files or create them if they do not exist.
+'w+' is used to append new data to existing files, also creating them
+if they do not exist.
+'r' is used to read files.</p>
+
+<p>A GridStream object initialized with 'r' as the mode will begin reading and upon completion,
+close automatically.</p>
+
+<p>The options object can be used to specify the content_type, metadata, chunk_size
+and root collection. The default root collection is 'fs'.</p>
+
+<ul><li><strong>example</strong>: <em>var</em>
+options = { "content_type" : "plain/text", "metadata" : { "author" : "Sidd" },
+"chunk_size" : 1024*4, "root" : 'articles' }; </li></ul>
+
+<p>The callback contains two parameters, an error object and the opened GridStream object.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="keyword">function</span> <span class="class">GridStream</span>(<span class="variable">dbname</span>, <span class="variable">filename</span>, <span class="variable">mode</span>, <span class="variable">options</span>, <span class="variable">callback</span>){
 
-	<span class="variable">events</span>.<span class="class">EventEmitter</span>.<span class="variable">call</span>(<span class="this">this</span>);
+	<span class="variable">stream</span>.<span class="variable">call</span>(<span class="this">this</span>);
 
 	<span class="keyword">var</span> <span class="variable">args</span> = <span class="class">Array</span>.<span class="variable">prototype</span>.<span class="variable">slice</span>.<span class="variable">call</span>(<span class="variable">arguments</span>, <span class="number integer">0</span>);
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
@@ -364,6 +393,8 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 	<span class="this">this</span>.<span class="variable">filename</span> = <span class="variable">filename</span>;
  	<span class="this">this</span>.<span class="variable">readable</span> = <span class="variable">mode</span> === <span class="string">'r'</span> ? <span class="variable">true</span> : <span class="variable">false</span>;
  	<span class="this">this</span>.<span class="variable">writable</span> = <span class="variable">mode</span> === (<span class="string">'w'</span> || <span class="string">'w+'</span>) ? <span class="variable">true</span> : <span class="variable">false</span>;
+ 	<span class="this">this</span>.<span class="variable">paused</span> = <span class="variable">false</span>;
+ 	<span class="this">this</span>.<span class="variable">encoding</span> = <span class="keyword">null</span>;
  	<span class="this">this</span>.<span class="variable">options</span> = <span class="variable">options</span>;
  	<span class="this">this</span>.<span class="variable">head</span> = <span class="number integer">0</span>;
  	
@@ -383,9 +414,76 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 	});
 };
 
-<span class="variable">util</span>.<span class="variable">inherits</span>(<span class="class">GridStream</span>, <span class="variable">events</span>.<span class="class">EventEmitter</span>);
+<span class="variable">util</span>.<span class="variable">inherits</span>(<span class="class">GridStream</span>, <span class="variable">stream</span>);</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Sets the return data encoding.</em></p>
 
-<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">write</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
+<h2></h2>
+
+<ul><li><strong>param</strong>: <em>String</em>  encoding</li></ul>
+
+<p>Setting the encoding return a encoded string instead of a Buffer
+on the 'data' event.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">setEncoding</span> = <span class="keyword">function</span>(<span class="variable">encoding</span>){
+
+	<span class="keyword">if</span>(<span class="variable">encoding</span> === <span class="string">'utf8'</span>||<span class="variable">encoding</span> === <span class="string">'ascii'</span>||<span class="variable">encoding</span> === <span class="string">'base64'</span>) 
+		<span class="this">this</span>.<span class="variable">encoding</span> = <span class="variable">encoding</span>;
+	<span class="keyword">else</span>
+		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'An unknown encoding was used.'</span>);
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Pauses the read.</em></p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">pause</span> = <span class="keyword">function</span>(){
+
+	<span class="this">this</span>.<span class="variable">paused</span> = <span class="variable">true</span>;
+	<span class="this">this</span>.<span class="variable">emit</span>(<span class="string">'pause'</span>);
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Resumes the read.</em></p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">resume</span> = <span class="keyword">function</span>(){
+
+	<span class="this">this</span>.<span class="variable">paused</span> = <span class="variable">false</span>;
+	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">readable</span>) <span class="this">this</span>.<span class="variable">_read</span>();
+	<span class="this">this</span>.<span class="variable">emit</span>(<span class="string">'resume'</span>);
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Writes data to the stream.</em></p>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Buffer | String</em>  buffer</p></li><li><p><strong>returns</strong>: <em>Boolean</em>  true</p></li></ul>
+
+<p>This method always returns true if there were no errors, 
+this ensures it works consistently with other stream objects.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">write</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
 	
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 	
@@ -396,54 +494,54 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 			<span class="keyword">if</span>(<span class="variable">err</span>) <span class="keyword">throw</span> <span class="variable">err</span>;
 			<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'drain'</span>);
 		});
+		
+		<span class="keyword">return</span> <span class="variable">true</span>;
+		
 	}<span class="keyword">else</span>{
 	 	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not writable.'</span>);
 	}
-}
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Writes data to the stream and then closes it.</em> </p>
 
-<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">_read</span> = <span class="keyword">function</span>(){
+<h2></h2>
 
-	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
-
-	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">readable</span>){
-		<span class="keyword">var</span> <span class="variable">len</span>;
-			
-		<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">head</span> + <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">chunk_size</span> &<span class="variable">gt</span>; <span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">length</span>)
-			<span class="variable">len</span> = <span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">length</span> - <span class="this">this</span>.<span class="variable">head</span>;
-		<span class="keyword">else</span>
-			<span class="variable">len</span> = <span class="this">this</span>.<span class="variable">options</span>.<span class="variable">chunk_size</span>;
-		
-		<span class="class">GridStore</span>.<span class="variable">read</span>(<span class="variable">self</span>.<span class="variable">db</span>, <span class="variable">self</span>.<span class="variable">filename</span>, <span class="variable">len</span>, <span class="variable">self</span>.<span class="variable">head</span>, { <span class="string">'root'</span> : <span class="variable">self</span>.<span class="variable">options</span>.<span class="variable">root</span> }, <span class="keyword">function</span>(<span class="variable">err</span>, <span class="variable">data</span>){
-			<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'data'</span>, <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">data</span>));
-					
-			<span class="variable">self</span>.<span class="variable">head</span> += <span class="variable">len</span>;
-			<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">head</span> !== <span class="variable">self</span>.<span class="variable">gridStore</span>.<span class="variable">length</span>)
-				<span class="variable">self</span>.<span class="variable">_read</span>();
-			<span class="keyword">else</span>{
-				<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'end'</span>);
-				<span class="variable">self</span>.<span class="variable">close</span>();	
-			}
-		});
-	}<span class="keyword">else</span>{
-	 	<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not readable.'</span>);
-	}
-}
-
-<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">end</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
+<ul><li><p><strong>param</strong>: <em>Buffer | String</em>  buffer (optional)</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">end</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
 
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 
 	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">writable</span>){
+		<span class="keyword">if</span>(!<span class="variable">buffer</span>) <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">destroy</span>();
+	
 		<span class="keyword">if</span>(!(<span class="variable">buffer</span> <span class="variable">instanceof</span> <span class="class">Buffer</span>)) <span class="variable">buffer</span> = <span class="keyword">new</span> <span class="class">Buffer</span>(<span class="variable">buffer</span>);
-		
+				
+		<span class="this">this</span>.<span class="variable">destroySoon</span>();
 		<span class="this">this</span>.<span class="variable">write</span>(<span class="variable">buffer</span>);
-		<span class="this">this</span>.<span class="variable">close</span>();
 	}<span class="keyword">else</span>{
 		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'This stream is not writable.'</span>);
 	}		
-}
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Closes the stream.</em></p>
 
-<span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">close</span> = <span class="keyword">function</span>(){
+<p>This method should only be used if you need to prematurely end
+a read stream. Otherwise, to close a write stream use end() or 
+destroySoon(). This allows the write to complete before the 
+underlying database connection is closed.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">destroy</span> = <span class="keyword">function</span>(){
 	
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 	
@@ -452,9 +550,37 @@ Mahendraker</li><li><strong>version</strong>: <em>0</em>
 		<span class="variable">self</span>.<span class="variable">db</span>.<span class="variable">close</span>();
 		<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'close'</span>);
 	});
-}
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Completes all writes then closes the stream.</em></p>
 
-<span class="variable">module</span>.<span class="variable">exports</span> = <span class="class">GridStream</span>;
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="class">GridStream</span>.<span class="variable">prototype</span>.<span class="variable">destroySoon</span> = <span class="keyword">function</span>(){
+
+	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
+	
+	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">writable</span>){
+		<span class="this">this</span>.<span class="variable">once</span>(<span class="string">'drain'</span>, <span class="keyword">function</span>(){
+			<span class="variable">self</span>.<span class="variable">destroy</span>();
+		});
+	}<span class="keyword">else</span>{
+		<span class="this">this</span>.<span class="variable">destroy</span>();
+	}
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p><em>Exports.</em>
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="variable">module</span>.<span class="variable">exports</span> = <span class="class">GridStream</span>;
 </code></pre>
 </td>
 </tr>	</body>
