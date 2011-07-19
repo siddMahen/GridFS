@@ -4,8 +4,8 @@
 
 ### GridFS
 
-- Figure out auto-timouts for the database connection.
+- See if auto timeouts could work.
 
 ### GridStream
 
-- Figure out how to close the read stream once it's done.
+- Make sure pipe() works in ward as well.

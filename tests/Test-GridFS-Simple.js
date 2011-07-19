@@ -1,13 +1,4 @@
 
-var GridStore = require('mongodb').GridStore,
-	Db = require('mongodb').Db,
-	Server = require('mongodb').Server,
-	Connection = require('mongodb').Connection;
-	
-var util = require("util");	
-var EventEmitter = require('events').EventEmitter
-
-var assert = require('assert');
 var GridFS = require('../lib/GridFS');
 
 var buffer = new Buffer('Hello Siddharth');
@@ -71,11 +62,11 @@ setTimeout(function(){
 	FS.put(new Buffer('Hello'),'HelloTest','w',function(err,data){
 		if (err) console.log(err);
 		FS.close();
-		console.log('Recieved');
+		console.log('Received.');
 	});
-	console.log('Sent');
+	console.log('Sent.');
 
-},2000);
+},1000);
 
 
 
