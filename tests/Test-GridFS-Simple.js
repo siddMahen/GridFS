@@ -4,27 +4,6 @@ var GridFS = require('../lib/GridFS');
 var buffer = new Buffer('Hello Siddharth');
 var secBuffer = new Buffer('Hello Rohan');
 
-// !TODO: Perhaps add some optimizations which close and open the database on demand,
-	//		  ergo, after 30 seconds of inactivity the connection to the db is closed
-    //		  if another request is made, then it will queue the request, open and then perform
-    //
-	//
-	//this.i = setInterval(function(){
-	//	var tt = setTimeout(function(){
-	//		 clearInterval(self.i)
-	//		 console.log('final close');
-	//	 },20000);
-	//
-	//	if(self.opQueue.length === 0){
-	//		 self.close();
-	//		 console.log(self.dbcon.state);
-	//	}else{
-	//		 clearTimeout(tt);
-	//		 self.open();
-	//	}
-	//},10000);
-	//
-
 var FS = new GridFS('test');
 
 FS.put(buffer, 'Test', 'w', function(err){
