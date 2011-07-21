@@ -5,7 +5,8 @@
 ### GridFS
 
 - See if auto timeouts could work.
+- Write more tests.
 
 ### GridStream
 
-- Make sure pipe() works in ward as well.
+- Write more tests.
