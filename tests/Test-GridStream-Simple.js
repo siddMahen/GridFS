@@ -43,21 +43,26 @@ stream.on('close', function(){
 	console.log('Read closed.');		
 });
 
+var but = fs.readFileSync('/Users/siddharth_mahen/text.txt');
+var abuf = fs.readFileSync('/Users/siddharth_mahen/text2.txt');
 
-
-var FStream = GridStream.createGridWriteStream('test','someTest','w');
+var FStream = GridStream.createGridWriteStream('test','bigTest','w');
 
 console.log('Beginning write.');
 
-FStream.write('This test should work... ');
 
 FStream.on('drain',function(){
 	console.log('Write succeeded.');
 });
 
-FStream.end();
-
 FStream.on('close',function(){
 	console.log('Write closed.');
 });
+
+FStream.write(' This should be in front ');
+FStream.write(but);
+FStream.write(' This should be in behind ');
+FStream.end('Hey all');
+
+
 
