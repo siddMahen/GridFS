@@ -4,13 +4,20 @@ Simple GridFS capabilities built on [node-mongodb-native](https://github.com/chr
  
 * * *
 
-## Usage:
+## Installation:
 
-To use, simply include GridFS.js or GridStream.js in your project:
+Install using npm:
 <code>
 <pre>
-var GridFS = require('path/to/GridFS.js');
-var GridStream = require('path/to/GridStream.js');
+npm install GridFS
+</pre>
+</code>
+
+Then include GridFS in your projects like this:
+<code>
+<pre>
+var GridFS = require('GridFS').GridFS;
+var GridStream = require('GridFS').GridStream;
 </pre>
 </code>
 
@@ -23,13 +30,13 @@ make tests
 </pre>
 </code>
 
-## Example:
+## Examples:
 
 A simple Hello World example using GridFS.
 
 <code>
 <pre>
-var GridFS = require('../GridFS.js');
+var GridFS = require('GridFS').GridFS;
 
 // Use the test database
 var myFS = new GridFS('test');
@@ -47,7 +54,7 @@ A similar example using GridStream.
 
 <code>
 <pre>
-var GridStream = require('../GridStream.js');
+var GridStream = require('GridFS').GridStream;
 
 // Use the test database and open or create 'Hello World!'
 var writeStream = GridStream.createGridWriteStream('test','Hello World!','w');

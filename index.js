@@ -2,5 +2,5 @@
 // Copyright(c) 2011 Siddharth Mahendraker <siddharth_mahen@me.com>
 // MIT Licensed
  
-module.exports = require('./lib/GridFS');
-module.exports = require('./lib/GridStream');
+exports.GridFS = require('./lib/GridFS');
+exports.GridStream = require('./lib/GridStream');
