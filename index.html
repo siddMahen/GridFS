@@ -330,6 +330,7 @@ _mahen@me.com (Siddharth Mahendraker)</li><li><strong>version</strong>: <em>0</e
 </td>
 <td class="code">
 <pre><code><span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
+	<span class="variable">events</span> = <span class="variable">require</span>(<span class="string">'events'</span>);
 	<span class="class">Stream</span> = <span class="variable">require</span>(<span class="string">'stream'</span>).<span class="class">Stream</span>;
 
 <span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
@@ -545,7 +546,14 @@ for options information. </p></li><li><p><strong>api</strong>: <em>public</em></
  	<span class="this">this</span>.<span class="variable">head</span> = <span class="number integer">0</span>;
  	
  	<span class="this">this</span>.<span class="variable">opQueue</span> = [];
+ 	<span class="this">this</span>.<span class="variable">emitter</span> = <span class="keyword">new</span> <span class="variable">events</span>.<span class="class">EventEmitter</span>();
+ 	<span class="this">this</span>.<span class="variable">busy</span> = <span class="variable">false</span>;
  	<span class="this">this</span>.<span class="variable">connected</span> = <span class="variable">false</span>;
+ 	
+ 	<span class="this">this</span>.<span class="variable">emitter</span>.<span class="variable">on</span>(<span class="string">'_op'</span>, <span class="keyword">function</span>(){
+			<span class="variable">self</span>.<span class="variable">busy</span> = <span class="variable">false</span>;
+			<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">0</span>) <span class="variable">self</span>.<span class="variable">_flush</span>();
+		});
  	
  	<span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>] = <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>] === <span class="variable">undefined</span> ? <span class="class">GridStore</span>.<span class="class">DEFAULT_ROOT_COLLECTION</span> : <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'root'</span>];
  	<span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>] = <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>] === <span class="variable">undefined</span> ? <span class="class">Chunk</span>.<span class="class">DEFAULT_CHUNK_SIZE</span> : <span class="this">this</span>.<span class="variable">options</span>[<span class="string">'chunk_size'</span>];
@@ -597,7 +605,13 @@ this ensures it works consistently with other stream objects.</p>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>Buffer | String</em>  buffer (optional)</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+<ul><li><strong>param</strong>: <em>Buffer | String</em>  buffer (optional)</li></ul>
+
+<p>This method is prefered to destroySoon() because it does not require
+you to have written previously. However, destroySoon() also has it's 
+advantages. See destroySoon() for more details.</p>
+
+<ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="class">GridWriteStream</span>.<span class="variable">prototype</span>.<span class="variable">end</span> = <span class="keyword">function</span>(<span class="variable">buffer</span>){
@@ -617,7 +631,7 @@ this ensures it works consistently with other stream objects.</p>
 
 <p>This method should only be used to close streams 
 on severe errors, in other cases use end() or destroySoon() 
-to close the Writable Stream. This allows the write to 
+to close the Writable Stream (preferably end). This allows previous writes to 
 complete before the underlying database connection is closed.</p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
@@ -627,11 +641,14 @@ complete before the underlying database connection is closed.</p>
 	
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 	
+	<span class="this">this</span>.<span class="variable">writable</span> = <span class="variable">false</span>;
+	<span class="this">this</span>.<span class="variable">readable</span> = <span class="variable">false</span>;
+	<span class="this">this</span>.<span class="variable">connected</span> = <span class="variable">false</span>;
+	<span class="this">this</span>.<span class="variable">busy</span> = <span class="variable">false</span>;
+			
 	<span class="this">this</span>.<span class="variable">gridStore</span>.<span class="variable">close</span>(<span class="keyword">function</span>(<span class="variable">err</span>,<span class="variable">result</span>){
 		<span class="keyword">if</span>(<span class="variable">err</span>) <span class="variable">self</span>.<span class="variable">_throw</span>(<span class="variable">err</span>);
 		
-		<span class="this">this</span>.<span class="variable">writable</span> = <span class="variable">false</span>;
-		<span class="this">this</span>.<span class="variable">readable</span> = <span class="variable">false</span>;
 		<span class="variable">self</span>.<span class="variable">db</span>.<span class="variable">close</span>();
 		<span class="variable">self</span>.<span class="variable">emit</span>(<span class="string">'close'</span>);
 	});
@@ -642,6 +659,13 @@ complete before the underlying database connection is closed.</p>
 <td class="docs">
 <p><em>Completes all writes then closes the stream.</em></p>
 
+<p>This will only work if there have been previous writes. If you wish
+to close the stream before writing anything, use end().</p>
+
+<h2>Note This function can be called before any writes have been called to</h2>
+
+<p>close the stream after the first write completes.</p>
+
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
@@ -650,9 +674,21 @@ complete before the underlying database connection is closed.</p>
 	<span class="keyword">var</span> <span class="variable">self</span> = <span class="this">this</span>;
 	
 	<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">writable</span>){
-		<span class="this">this</span>.<span class="variable">once</span>(<span class="string">'drain'</span>, <span class="keyword">function</span>(){
-			<span class="variable">self</span>.<span class="variable">destroy</span>();
-		});
+		<span class="keyword">if</span>(<span class="this">this</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">1</span>){	
+			<span class="this">this</span>.<span class="variable">emitter</span>.<span class="variable">on</span>(<span class="string">'_op'</span>, <span class="keyword">function</span>(){
+				<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> === <span class="number integer">1</span>){
+					<span class="variable">self</span>.<span class="variable">emitter</span>.<span class="variable">removeAllListeners</span>(<span class="string">'_op'</span>);
+					<span class="variable">self</span>.<span class="variable">emitter</span>.<span class="variable">once</span>(<span class="string">'_op'</span>, <span class="keyword">function</span>(){
+						<span class="variable">self</span>.<span class="variable">destroy</span>();
+					});
+				}
+			});
+		}<span class="keyword">else</span>{
+			<span class="this">this</span>.<span class="variable">emitter</span>.<span class="variable">removeAllListeners</span>(<span class="string">'_op'</span>);
+			<span class="this">this</span>.<span class="variable">emitter</span>.<span class="variable">once</span>(<span class="string">'_op'</span>, <span class="keyword">function</span>(){
+				<span class="variable">self</span>.<span class="variable">destroy</span>();
+			});
+		}
 	}<span class="keyword">else</span>{
 		<span class="this">this</span>.<span class="variable">destroy</span>();
 	}
