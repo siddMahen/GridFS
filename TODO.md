@@ -1,12 +1,10 @@
 # TODO
 
-* * *
-
-### GridFS
+## GridFS
 
 - See if auto timeouts could work.
 - Write more tests.
 
-### GridStream
+## GridStream
 
 - Write more tests.
