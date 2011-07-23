@@ -3,8 +3,8 @@
 ## GridFS
 
 - See if auto timeouts could work.
-- Write more tests.
+- Significantly improve tests.
 
 ## GridStream
 
-- Write more tests.
+- Significantly improve tests.

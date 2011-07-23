@@ -44,7 +44,6 @@ setTimeout(function(){
 		console.log('Received.');
 	});
 	console.log('Sent.');
-
 },1000);
 
 

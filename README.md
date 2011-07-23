@@ -22,6 +22,9 @@ To run the tests:
 make tests
 </pre>
 
+Please note the current tests are _very_ poorly written.
+They have local dependancies which I will fix soon.
+
 ## Examples:
 
 A simple Hello World example using GridFS.
