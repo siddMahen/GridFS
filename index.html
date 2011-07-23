@@ -179,7 +179,7 @@ or 'w+' to append to the contents of the file.</p>
 <p>options can be used to specify the content_type, metadata and chunk_size</p>
 
 <ul><li><strong>example</strong>: <em>var</em>
-options = {"content_type":"image/png","metadata":{ "person": "George"},"chunk_size": 1024*4};</li></ul>
+options = { 'content_type' : 'image/png', 'metadata' : { 'person' : 'George' }, 'chunk_size' : 1024*4 };</li></ul>
 
 <p>The callback takes an error and a result parameter, which provides information
 about the file after it has been stored. </p>
@@ -329,7 +329,7 @@ _mahen@me.com (Siddharth Mahendraker)</li><li><strong>version</strong>: <em>0</e
  </p>
 </td>
 <td class="code">
-<pre><code><span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(&<span class="variable">quot</span>;<span class="variable">util</span>&<span class="variable">quot</span>;),
+<pre><code><span class="keyword">var</span> <span class="variable">util</span> = <span class="variable">require</span>(<span class="string">'util'</span>),
 	<span class="variable">events</span> = <span class="variable">require</span>(<span class="string">'events'</span>);
 	<span class="class">Stream</span> = <span class="variable">require</span>(<span class="string">'stream'</span>).<span class="class">Stream</span>;
 
@@ -364,8 +364,8 @@ close automatically.</p>
 and root collection. The default root collection is 'fs'.</p>
 
 <ul><li><p><strong>example</strong>: <em>var</em>
-options = { "content_type" : "plain/text", "metadata" : { "author" : "Sidd" },
-"chunk_size" : 1024*4, "root" : 'articles' }; </p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
+options = { 'content_type' : 'plain/text', 'metadata' : { 'author' : 'Sidd' },
+'chunk_size' : 1024*4, 'root' : 'articles' }; </p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="keyword">function</span> <span class="class">GridReadStream</span>(<span class="variable">dbname</span>, <span class="variable">filename</span>, <span class="variable">options</span>){
@@ -543,7 +543,6 @@ for options information. </p></li><li><p><strong>api</strong>: <em>public</em></
  	<span class="this">this</span>.<span class="variable">readable</span> = <span class="variable">false</span>;
  	<span class="this">this</span>.<span class="variable">writable</span> = <span class="variable">true</span>;
  	<span class="this">this</span>.<span class="variable">options</span> = <span class="variable">options</span>;
- 	<span class="this">this</span>.<span class="variable">head</span> = <span class="number integer">0</span>;
  	
  	<span class="this">this</span>.<span class="variable">opQueue</span> = [];
  	<span class="this">this</span>.<span class="variable">emitter</span> = <span class="keyword">new</span> <span class="variable">events</span>.<span class="class">EventEmitter</span>();
