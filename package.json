@@ -2,7 +2,7 @@
   "author": "Siddharth Mahendraker <siddharth_mahen@me.com>",
   "name": "GridFS",
   "description": "GridFS made easy.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "https://github.com/siddMahen/GridFS",
   "keywords": ["GridFS", "mongodb"],
   "repository": {

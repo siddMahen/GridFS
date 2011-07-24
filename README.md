@@ -9,7 +9,7 @@ Install using npm:
 npm install GridFS
 </pre>
 
-Then include GridFS in your projects like this:
+Then include GridFS in your projects:
 <pre>
 var GridFS = require('GridFS').GridFS;
 var GridStream = require('GridFS').GridStream;
@@ -21,9 +21,6 @@ To run the tests:
 <pre>
 make tests
 </pre>
-
-Please note the current tests are _very_ poorly written.
-They have local dependancies which I will fix soon.
 
 ## Examples:
 
