@@ -123,7 +123,9 @@ easy to use interface for GridFS.</li></ul>
  </p>
 </td>
 <td class="code">
-<pre><code><span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
+<pre><code><span class="keyword">var</span> <span class="variable">events</span> = <span class="variable">require</span>(<span class="string">'events'</span>);
+ 
+<span class="keyword">var</span> <span class="class">GridStore</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">GridStore</span>,
 	<span class="class">Db</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Db</span>,
 	<span class="class">Server</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Server</span>,
 	<span class="class">Connection</span> = <span class="variable">require</span>(<span class="string">'mongodb'</span>).<span class="class">Connection</span>;</code></pre>
@@ -156,6 +158,13 @@ If nothing is specified then the default 'fs' will be used.</p>
 	<span class="this">this</span>.<span class="variable">dbcon</span> = <span class="keyword">new</span> <span class="class">Db</span>(<span class="variable">dbname</span>, <span class="keyword">new</span> <span class="class">Server</span>(<span class="variable">host</span>, <span class="variable">port</span>, {}), { <span class="variable">native_parser</span> : <span class="variable">true</span> });
 	<span class="this">this</span>.<span class="variable">fs</span> = <span class="variable">filesys</span> === <span class="variable">undefined</span> ? <span class="class">GridStore</span>.<span class="class">DEFAULT_ROOT_COLLECTION</span> : <span class="variable">filesys</span>;
 	<span class="this">this</span>.<span class="variable">opQueue</span> = [];
+	<span class="this">this</span>.<span class="variable">emitter</span> = <span class="keyword">new</span> <span class="variable">events</span>.<span class="class">EventEmitter</span>();
+	<span class="this">this</span>.<span class="variable">busy</span> = <span class="variable">false</span>;
+
+	<span class="this">this</span>.<span class="variable">emitter</span>.<span class="variable">on</span>(<span class="string">'_op'</span>, <span class="keyword">function</span>(){
+		<span class="variable">self</span>.<span class="variable">busy</span> = <span class="variable">false</span>;
+		<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">0</span>) <span class="variable">self</span>.<span class="variable">performOp</span>();
+	});
 	
 	<span class="keyword">if</span>(!(<span class="this">this</span>.<span class="variable">dbcon</span>)) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'Database creation failed.'</span>);
 	
@@ -657,9 +666,8 @@ complete before the underlying database connection is closed.</p>
 <p>This will only work if there have been previous writes. If you wish
 to close the stream before writing anything, use end().</p>
 
-<h2>Note This function can be called before any writes have been called to</h2>
-
-<p>close the stream after the first write completes.</p>
+<p>This function can be called before any writes have been called to 
+close the stream after the first write completes.</p>
 
 <ul><li><p><strong>api</strong>: <em>public</em></p></li></ul>
 </td>
