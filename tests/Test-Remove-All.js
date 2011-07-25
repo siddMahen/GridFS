@@ -5,16 +5,12 @@
 var GridFS = require('../lib/GridFS');
 var fs = new GridFS('test');
 
-fs.delete('AnotherFile.txt',function(){
-	fs.delete('Text.txt',function(){
-		fs.delete('TestFile.txt',function(){
-			fs.delete('Long.txt',function(){
-				fs.close();
-			});
-		});
-	});
-});
-
+fs.delete('AnotherFile.txt');
+fs.delete('Text.txt');
+fs.delete('TestFile.txt');
+fs.delete('Long.txt');
+fs.close();
+	
 process.on('exit', function () {
 	console.log('Passed.');
 	console.log('Cleanup complete.');

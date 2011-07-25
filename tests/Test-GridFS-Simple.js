@@ -10,31 +10,36 @@ var secBuffer = new Buffer('Hello Nancy');
 
 var FS = new GridFS('test');
 
+// GridFS calls are queued up so they complete in order
 FS.put(buffer, 'Test', 'w', function(err){
 	assert.ifError(err);
-	FS.get('Test',function(err, data){
-		assert.ifError(err);
-		assert.strictEqual(data, 'Hello John','Error returning correct data on: "Hello John"');
-		FS.delete('Test',function(err){
-			assert.ifError(err);
-		})
-	});
 });
 
+FS.get('Test',function(err, data){
+	assert.ifError(err);
+	assert.strictEqual(data.toString(), 'Hello John','Error returning correct data on: "Hello John"');
+});
+
+FS.delete('Test',function(err){
+	assert.ifError(err);
+});
+
+// This is another method to achieve a slightly different outcome, 
+// as the next function is queued once the first is completed
+// Note that in this method, FS.close() must be called at the bottom 
+// of the callback tree, or else it will be queued to run after FS.put()
+// is complete
 FS.put(secBuffer, 'Another Test', 'w', function(err){
 	assert.ifError(err);
 	FS.get('Another Test',function(err, data){
 		assert.ifError(err);
-		assert.strictEqual(data, 'Hello Nancy','Error returning correct data on: "Hello Nancy"');
+		assert.strictEqual(data.toString(), 'Hello Nancy','Error returning correct data on: "Hello Nancy"');
 		FS.delete('Another Test',function(err){
 			assert.ifError(err);
+			FS.close();
 		});
 	});
 });
-
-setTimeout(function(){
-	FS.close();
-},500);
 
 var newBuf = new Buffer('Hello');
 
@@ -43,11 +48,11 @@ setTimeout(function(){
 	FS.put(newBuf,'HelloTest','w',function(err,data){
 		assert.ifError(err);
 		assert.ok(data,'Error putting correct data on: "Hello"');
-		FS.delete('HelloTest',function(err){
-				assert.ifError(err);
-				FS.close();
-		});
 	});
+	FS.delete('HelloTest',function(err){
+		assert.ifError(err);
+	});
+	FS.close();
 },1000);
 
 process.on('exit', function () {

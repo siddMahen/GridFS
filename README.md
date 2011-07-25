@@ -1,6 +1,6 @@
 # GridFS
 
-Simple GridFS capabilities built on [node-mongodb-native](https://github.com/christkv/node-mongodb-native "node-mongodb-native").
+Simple yet powerful GridFS capabilities built on [node-mongodb-native](https://github.com/christkv/node-mongodb-native "node-mongodb-native").
  
 ## Installation:
 
@@ -32,11 +32,18 @@ var GridFS = require('GridFS').GridFS;
 var myFS = new GridFS('test');
 var text = new Buffer('Hello World!');
 
+// Functions are performed in the order they are queued
 myFS.put(text, 'Hello World!', 'w', function(err){
-	myFS.get('Hello World!',function(err,data){
-		console.log(data);
-	});
+	if(err) console.log(err);
 });
+
+myFS.get('Hello World!',function(err,data){
+	console.log(data);
+});
+
+// Functions called on a GridFS object after it has closed will be queued to perform 
+// when it opens again.
+myFS.close();
 </pre>
 
 A similar example using GridStream.

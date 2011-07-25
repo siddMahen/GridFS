@@ -30,8 +30,5 @@ FStream.on('error', function(err){
 process.on('exit', function () {
 	fs.unlinkSync('Long.txt');
 	fs.unlinkSync('TestFile.txt');
-	var FS = new GridFS('test');
-	FS.delete('Long.txt');
-	FS.delete('TestFile.txt');
 	console.log('Passed.');
 });

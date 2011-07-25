@@ -43,8 +43,5 @@ myFS.put(testText,'Text.txt','w',function(err){
 });
 
 process.on('exit', function () {
-	var FS = new GridFS('test')
-	FS.delete('AnotherFile.txt');
-	FS.delete('Text.txt');
 	console.log('Passed.');
 });
