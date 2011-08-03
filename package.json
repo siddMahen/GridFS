@@ -14,7 +14,7 @@
     "test": "make tests"
   },
   "engines": {
-    "node": "v0.4.9"
+    "node": ">=v0.4.9"
   },
   "dependencies": {
     "mongodb": ">=0.9.6-7"
