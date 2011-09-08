@@ -1,10 +1,4 @@
 # TODO
 
-## GridFS
+- Add a function callback to `open()`.
 
-- See if auto timeouts could work.
-- Improve tests.
-
-## GridStream
-
-- Improve tests.
