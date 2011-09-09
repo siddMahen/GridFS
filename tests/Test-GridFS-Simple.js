@@ -36,7 +36,11 @@ FS.put(secBuffer, 'Another Test', 'w', function(err){
 		assert.strictEqual(data.toString(), 'Hello Nancy','Error returning correct data on: "Hello Nancy"');
 		FS.delete('Another Test',function(err){
 			assert.ifError(err);
-			FS.close();
+			var t = 0;
+			FS.close(function(){
+				t = 1;
+			});
+			assert.strictEqual(1,t);
 		});
 	});
 });
@@ -44,7 +48,9 @@ FS.put(secBuffer, 'Another Test', 'w', function(err){
 var newBuf = new Buffer('Hello');
 
 setTimeout(function(){
-	FS.open();
+	FS.open(function(err){
+		assert.ifError(err);
+	});
 	FS.put(newBuf,'HelloTest','w',function(err,data){
 		assert.ifError(err);
 		assert.ok(data,'Error putting correct data on: "Hello"');
