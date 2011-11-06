@@ -171,7 +171,7 @@ If nothing is specified then the default 'fs' will be used.</p>
 		<span class="keyword">if</span>(<span class="variable">self</span>.<span class="variable">opQueue</span>.<span class="variable">length</span> &<span class="variable">gt</span>; <span class="number integer">0</span>) <span class="variable">self</span>.<span class="variable">performOp</span>();
 	});
 	
-	<span class="keyword">if</span>(!(<span class="this">this</span>.<span class="variable">dbcon</span>)) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'Database creation failed.'</span>);
+	<span class="keyword">if</span>(!(<span class="this">this</span>.<span class="variable">dbcon</span>)) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="class">Error</span>(<span class="string">'Database connection failed.'</span>);
 	
 	<span class="this">this</span>.<span class="variable">open</span>();
 };</code></pre>
@@ -219,7 +219,7 @@ about the file after it has been stored. </p>
 <ul><li><p><strong>param</strong>: <em>String</em>  filename</p></li><li><p><strong>param</strong>: <em>Number</em>  length (optional)</p></li><li><p><strong>param</strong>: <em>Number</em>  offset (optional) </p></li><li><p><strong>param</strong>: <em>Object</em>  options (optional)</p></li><li><p><strong>param</strong>: <em>Function</em>  callback</p></li></ul>
 
 <p>The callback function takes an error and data as parameters. The data object is 
-a string.</p>
+a buffer.</p>
 
 <ul><li><p><strong>see</strong>: <em>put</em>
 () for option details.</p></li><li><p><strong>api</strong>: <em>public</em></p></li></ul>
