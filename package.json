@@ -11,7 +11,7 @@
   },
   "main": "index",
   "scripts": {
-    "test": "make tests"
+    "test": "make test"
   },
   "engines": {
     "node": ">=v0.4.9"

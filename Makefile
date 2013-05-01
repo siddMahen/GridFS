@@ -1,4 +1,4 @@
-TESTFOLDER := tests/
+TESTFOLDER := test/
 LIBFOLDER := lib/
 
 TESTFILES := $(wildcard $(TESTFOLDER)Test-*.js)
@@ -6,16 +6,16 @@ TESTFILENAMES := $(notdir $(TESTFILES))
 
 FILES := $(wildcard $(LIBFOLDER)*.js)
 
-.PHONY : all tests docs
-all: tests docs
-	
-tests:
+.PHONY : all test docs
+all: test docs
+
+test:
 	@echo \#\#\# START TESTS \#\#\#
 	@for file in $(TESTFILENAMES); do \
                 echo \#\#\# $$file \#\#\#; \
                 node $(TESTFOLDER)$$file; \
         done
-	@echo \#\#\# END TESTS \#\#\# 
+	@echo \#\#\# END TESTS \#\#\#
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 docs:
 	@echo \#\#\# START DOCS \#\#\#
@@ -29,7 +29,7 @@ docs:
 	@echo `git add index.html`
 	@echo `git commit -q -m 'Updated docs.'`
 	@echo `git push -q origin gh-pages`
-	@echo `git checkout -q master` 
+	@echo `git checkout -q master`
 	@echo \#\#\# END DOCS \#\#\#
 	@echo `echo "\033[33;32m### SUCCESS ###\033[33;0m"`
 
