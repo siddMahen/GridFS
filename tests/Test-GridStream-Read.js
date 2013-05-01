@@ -22,20 +22,20 @@ assert.doesNotThrow(function(){
 myFS.put(testText,'Text.txt','w',function(err){
 	assert.ifError(err);
 	var stream = GridStream.createGridReadStream('test','Text.txt',{ 'chunk_size' : 3 });
-	
+
 	var Data = "";
 
 	stream.setEncoding('utf8');
 	stream.setEncoding('base64');
 	stream.setEncoding('ascii');
-	
+
 	stream.once('data',function(data){
 		stream.pause();
 		setTimeout(function(){
 			stream.resume();
 		},1000);
 	});
-	
+
 	stream.on('error',function(err){
 		assert.ifError(err);
 	});

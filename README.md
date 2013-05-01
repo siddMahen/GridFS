@@ -1,7 +1,7 @@
 # GridFS
 
 Simple yet powerful GridFS capabilities built on [node-mongodb-native](https://github.com/christkv/node-mongodb-native "node-mongodb-native").
- 
+
 ## Installation:
 
 Install using npm:
@@ -41,7 +41,7 @@ myFS.get('Hello World!',function(err,data){
 	console.log(data);
 });
 
-// Functions called on a GridFS object after it has closed will be queued to perform 
+// Functions called on a GridFS object after it has closed will be queued to perform
 // when it opens again.
 myFS.close();
 </pre>
@@ -65,7 +65,7 @@ Click [here](http://siddmahen.github.com/GridFS) to view the documentation onlin
 
 (The MIT License)
 
-Copyright (C) 2011 by Siddharth Mahendraker
+Copyright (C) 2013 by Siddharth Mahendraker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -24,9 +24,9 @@ FS.delete('Test',function(err){
 	assert.ifError(err);
 });
 
-// This is another method to achieve a slightly different outcome, 
+// This is another method to achieve a slightly different outcome,
 // as the next function is queued once the first is completed
-// Note that in this method, FS.close() must be called at the bottom 
+// Note that in this method, FS.close() must be called at the bottom
 // of the callback tree, or else it will be queued to run after FS.put()
 // is complete
 FS.put(secBuffer, 'Another Test', 'w', function(err){

@@ -10,7 +10,7 @@ fs.delete('Text.txt');
 fs.delete('TestFile.txt');
 fs.delete('Long.txt');
 fs.close();
-	
+
 process.on('exit', function () {
 	console.log('Passed.');
 	console.log('Cleanup complete.');
